@@ -6,11 +6,26 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.util.Log;
+import android.widget.Toast;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 import com.example.linkshare.Models.Enlaces;
 import com.example.linkshare.adapters.EnlaceAdapter;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class ListActivity extends AppCompatActivity {
 
@@ -33,17 +48,83 @@ public class ListActivity extends AppCompatActivity {
 
     private void getDataForLayout(Context context){
 
+        // ...
+
+        // Instantiate the RequestQueue.
+        RequestQueue queue = Volley.newRequestQueue(this);
+        String url = "https://api.notion.com/v1/databases/47c04133f8c040e28800a8db48a6b17c/query";
+
+        StringRequest sr = new StringRequest(Request.Method.POST, url,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        Log.e("HttpClient", "success! response: " + response.toString());
+                        enlacesList.clear();
+                        try {
+                            JSONObject obj = new JSONObject(response.toString());
+                            JSONArray resutls = obj.getJSONArray("results");
+                            for (int i = 0; i < resutls.length(); i++) {
+                                try{
+                                    JSONObject listDetail = resutls.getJSONObject(i);
+                                    Log.e("JSON", " JSOOOOON" );
+                                    String texto = listDetail.getJSONObject("properties").getJSONObject("Description").getJSONArray("rich_text").getJSONObject(0).getJSONObject("text").getString("content");
+                                    Log.e("JSON", " " + texto);
+
+
+                                    enlacesList.add(new Enlaces(texto, "descripcion", "img_url", "url2"));
+                                } catch (Exception e){
+                                    e.printStackTrace();
+                                }
+
+                            }
+                            eAdapter = new EnlaceAdapter(context, enlacesList, R.layout.list_view);
+                            eRecycleview.setAdapter(eAdapter);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Log.e("HttpClient", "error: " + error.toString());
+                    }
+                })
+        {
+            @Override
+            protected Map<String,String> getParams(){
+                Map<String,String> params = new HashMap<String, String>();
+                // params.put("user","YOUR USERNAME");
+                //  params.put("pass","YOUR PASSWORD");
+                return params;
+            }
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String,String> params = new HashMap<String, String>();
+                params.put("Authorization", "Bearer secret_6F4PuUDe0OpqTeokJlmnj7vzhCOQuGRJJ6Ibpgoc0le");
+                params.put("Notion-Version", "2021-08-16");
+                return params;
+            }
+        };
+
+        // Add the request to the RequestQueue.
+        queue.add(sr);
+
+ /*
         enlacesList.clear();
+
         for (int i = 0; i < 4; i++) {
 
             String texto = "Texto " + i;
             String descripcion = "Descripcion " + i;
             String img_url = "https://media.istockphoto.com/photos/madrid-spain-on-gran-via-picture-id1297090032?b=1&k=20&m=1297090032&s=170667a&w=0&h=OLFFlSPXDqXq7SZaLMTUpGJh-bz7FKRCjnOTGBT7GRc=";
-            String url = "http://example.com";
-            enlacesList.add(new Enlaces(texto, descripcion, img_url, url));
+            String url2 = "http://example.com";
+            enlacesList.add(new Enlaces(texto, descripcion, img_url, url2));
         }
+
         eAdapter = new EnlaceAdapter(context, enlacesList, R.layout.list_view);
         eRecycleview.setAdapter(eAdapter);
+        */
     }
 
 }

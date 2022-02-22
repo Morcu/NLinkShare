@@ -4,6 +4,11 @@
     <option name="filePathToZoomLevelMap">
       <map>
         <entry key="..\:/proyecto/LinkShare/app/src/main/res/layout/activity_main.xml" value="0.3109375" />
+        <entry key="..\:/proyecto/LinkShare/app/src/main/res/layout/activity_main_onboard.xml" value="0.25" />
+        <entry key="..\:/proyecto/LinkShare/app/src/main/res/layout/list_layout.xml" value="0.3109375" />
+        <entry key="..\:/proyecto/LinkShare/app/src/main/res/layout/list_view.xml" value="0.3109375" />
+        <entry key="..\:/proyecto/LinkShare/app/src/main/res/layout/receive_layout.xml" value="0.3109375" />
+        <entry key="..\:/proyecto/LinkShare/app/src/main/res/layout/slide_layout.xml" value="0.14488348530901723" />
       </map>
     </option>
   </component>
