@@ -43,6 +43,42 @@
         android:background="@android:drawable/screen_background_dark_transparent"
         android:text="Button" />
 
+    <EditText
+        android:id="@+id/editIdNotion"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginHorizontal="@android:dimen/app_icon_size"
+        android:layout_marginBottom="100dp"
+        android:lineSpacingExtra="10sp"
+        android:paddingVertical="@android:dimen/app_icon_size"
+        android:singleLine="false"
+        android:hint="Introduce el id de notion"
+        android:textAlignment="center"
+        android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+        android:textColor="@color/colorTransparentWhite"
+        android:visibility="invisible"
+        />
+
+    <EditText
+        android:id="@+id/editIdNotionDatabase"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginHorizontal="@android:dimen/app_icon_size"
+        android:layout_marginBottom="100dp"
+        android:lineSpacingExtra="10sp"
+        android:paddingVertical="@android:dimen/app_icon_size"
+        android:singleLine="false"
+        android:hint="Introduce el id de la tabla"
+        android:textAlignment="center"
+        android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+        android:textColor="@color/colorTransparentWhite"
+        android:visibility="invisible"
+        />
+
 
 </RelativeLayout>
 
