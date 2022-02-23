@@ -5,6 +5,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
@@ -33,6 +34,9 @@ public class ListActivity extends AppCompatActivity {
     private RecyclerView eRecycleview;
     private ArrayList<Enlaces> enlacesList = new ArrayList<>();
 
+    public static final String SHARED_PREFS = "sharedPrefs";
+    public static String NOTION_ID = "NOTION_ID";
+    public static String NOTION_DATABASE_ID = "NOTION_DATABASE_ID";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,13 +50,22 @@ public class ListActivity extends AppCompatActivity {
         getDataForLayout(getApplicationContext());
     }
 
+    // Load data from shared preferences
+    public String loadData(String key) {
+        SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFS, MODE_PRIVATE);
+        return sharedPreferences.getString(key, "");
+    }
+
     private void getDataForLayout(Context context){
 
         // ...
 
         // Instantiate the RequestQueue.
         RequestQueue queue = Volley.newRequestQueue(this);
-        String url = "https://api.notion.com/v1/databases/47c04133f8c040e28800a8db48a6b17c/query";
+
+        String notion_id = loadData(NOTION_ID);
+        String notion_database_id = loadData(NOTION_DATABASE_ID);
+        String url = "https://api.notion.com/v1/databases/" + notion_database_id + "/query";
 
         StringRequest sr = new StringRequest(Request.Method.POST, url,
                 new Response.Listener<String>() {
@@ -101,7 +114,7 @@ public class ListActivity extends AppCompatActivity {
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {
                 Map<String,String> params = new HashMap<String, String>();
-                params.put("Authorization", "Bearer secret_6F4PuUDe0OpqTeokJlmnj7vzhCOQuGRJJ6Ibpgoc0le");
+                params.put("Authorization", "Bearer " + notion_id);
                 params.put("Notion-Version", "2021-08-16");
                 return params;
             }

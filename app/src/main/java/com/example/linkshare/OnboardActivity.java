@@ -1,5 +1,6 @@
 package com.example.linkshare;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.Editable;
@@ -16,7 +17,21 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.viewpager.widget.ViewPager;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
+import com.example.linkshare.Models.Enlaces;
 import com.example.linkshare.adapters.SliderAdapter;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class OnboardActivity extends AppCompatActivity {
 
@@ -43,7 +58,7 @@ public class OnboardActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_onboard);
 
-
+        // Front variables
         mSlideViewPager = (ViewPager) findViewById(R.id.slideviewpager);
         mDotLayout = (LinearLayout) findViewById(R.id.linearLayout);
         sliderAdapter = new SliderAdapter(this);
@@ -55,24 +70,33 @@ public class OnboardActivity extends AppCompatActivity {
         mBackBtn = (Button) findViewById(R.id.previous);
         addDotsIndicator(0);
         mSlideViewPager.addOnPageChangeListener(viewListener);
+        
+
+        // Next button listener
         mNextBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                Log.e("CurrentPage", ""+mCurrentPage);
                 switch(mCurrentPage) {
+                    // case 1 & 2 save data ids
                     case 1:
                         Toast.makeText(OnboardActivity.this, editIdNotion.getText().toString(), Toast.LENGTH_SHORT).show();
-                        //editor.putString(NOTION_ID, editIdNotion.getText().toString());
-                        //editor.apply();
                         saveData(NOTION_ID, editIdNotion.getText().toString());
+                        break;
                     case 2:
-                        Toast.makeText(OnboardActivity.this, editIdNotionDatabase.getText().toString(), Toast.LENGTH_SHORT).show();
-                        //editor.putString(NOTION_DATABASE_ID, editIdNotionDatabase.getText().toString());
-                        //editor.apply();
                         saveData(NOTION_DATABASE_ID, editIdNotionDatabase.getText().toString());
+                        break;
+                    // Case 3 change intent
+                    case 3:
+                        Intent myIntent = new Intent(OnboardActivity.this, ListActivity.class);
+                        startActivity(myIntent);
+                        break;
                 }
+                // Slider for pages
                 mSlideViewPager.setCurrentItem(mCurrentPage + 1);
             }
         });
+        // Back button listener
         mBackBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -80,23 +104,25 @@ public class OnboardActivity extends AppCompatActivity {
             }
         });
     }
+
+    // Saves data to Shared preferences
     public void saveData(String key, String value) {
         SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFS, MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
 
         editor.putString(key, value);
         editor.apply();
-        Toast.makeText(this, "Data saved"+ " "+ key + " " + value, Toast.LENGTH_SHORT).show();
     }
 
-
+    // Load data from shared preferences
     public String loadData(String key) {
         SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFS, MODE_PRIVATE);
         return sharedPreferences.getString(key, "");
     }
+    
 
+    // Onboarding dots front manager
     public void addDotsIndicator(int position) {
-
         mdots = new TextView[4];
         mDotLayout.removeAllViews();
         for (int i = 0; i < mdots.length; i++) {
@@ -110,20 +136,21 @@ public class OnboardActivity extends AppCompatActivity {
             mdots[position].setTextColor(getResources().getColor(R.color.navyblue));
         }
     }
-    ViewPager.OnPageChangeListener viewListener = new ViewPager.OnPageChangeListener() {
 
+    // Page change listener
+    ViewPager.OnPageChangeListener viewListener = new ViewPager.OnPageChangeListener() {
 
         @Override
         public void onPageScrolled(int i, float v, int i1) {
-
         }
+
 
         @Override
         public void onPageSelected(int i) {
             addDotsIndicator(i);
             mCurrentPage = i;
 
-
+            // Fist page only info
             if (i == 0) {
 
                 mNextBtn.setEnabled(true);
@@ -136,6 +163,7 @@ public class OnboardActivity extends AppCompatActivity {
                 editIdNotionDatabase.setVisibility(View.INVISIBLE);
                 editIdNotion.setVisibility(View.INVISIBLE);
 
+            // Second page has to write notion ID in order to follow the process
             } else if (i == mdots.length - 3) {
 
 
@@ -164,8 +192,7 @@ public class OnboardActivity extends AppCompatActivity {
                     }
                 });
 
-                // Guarda conexion
-
+            // Third page has to write notion database ID in order to follow the process
             }  else if (i == mdots.length - 2) {
                 mBackBtn.setEnabled(true);
                 mBackBtn.setVisibility(View.VISIBLE);
@@ -193,9 +220,7 @@ public class OnboardActivity extends AppCompatActivity {
                     }
                 });
 
-
-                // Guarda la tabla
-
+            // Fourth page checks if the ids are correct and let you change to the list intent
             } else if (i == mdots.length - 1) {
 
                 mBackBtn.setEnabled(true);
@@ -205,20 +230,77 @@ public class OnboardActivity extends AppCompatActivity {
                 editIdNotionDatabase.setVisibility(View.INVISIBLE);
                 editIdNotion.setVisibility(View.INVISIBLE);
 
-                String nid = loadData(NOTION_ID);
-                String ndid = loadData(NOTION_DATABASE_ID);
-                Log.e("SSSS", nid + " "+ ndid);
-                if (!nid.isEmpty() && !ndid.isEmpty()){
+                String notion_id = loadData(NOTION_ID);
+                String notion_database_id = loadData(NOTION_DATABASE_ID);
+                Log.e("SSSS", notion_id + " "+ notion_database_id);
+
+                // Handler for null safety ids
+                if (!notion_id.isEmpty() && !notion_database_id.isEmpty()){
                     Log.e("SSSS", "True");
-                    mNextBtn.setEnabled(true);
-                    mNextBtn.setText("Let-s go");
-                    mNextBtn.setVisibility(View.VISIBLE);
+
+                    RequestQueue queue = Volley.newRequestQueue(OnboardActivity.this);
+
+                    String url = "https://api.notion.com/v1/databases/" + notion_database_id;
+
+                    StringRequest sr = new StringRequest(Request.Method.GET, url,
+                            new Response.Listener<String>() {
+                                @Override
+                                public void onResponse(String response) {
+
+                                    try{
+                                        JSONObject obj = new JSONObject(response);
+
+                                        if(obj.getString("object").equals("database")){
+                                            mNextBtn.setEnabled(true);
+                                            mNextBtn.setText("Let-s go");
+                                            mNextBtn.setVisibility(View.VISIBLE);
+                                        }else{
+                                            Toast.makeText(OnboardActivity.this, "No HA PASASDO NAH", Toast.LENGTH_SHORT).show();
+                                        }
+
+                                    } catch (Exception e){
+                                        e.printStackTrace();
+                                    }
+
+
+                                }
+                            },
+                            new Response.ErrorListener() {
+                                @Override
+                                public void onErrorResponse(VolleyError error) {
+                                    Log.e("HttpClient", "error: " + error.toString());
+                                }
+                            })
+                    {
+                        @Override
+                        protected Map<String,String> getParams(){
+                            Map<String,String> params = new HashMap<String, String>();
+                            return params;
+                        }
+                        @Override
+                        public Map<String, String> getHeaders() throws AuthFailureError {
+                            Map<String,String> params = new HashMap<String, String>();
+                            params.put("Authorization", "Bearer " + notion_id);
+                            params.put("Notion-Version", "2021-08-16");
+                            return params;
+                        }
+
+                    };
+                    // Add the request to the RequestQueue.
+                    queue.add(sr);
+                    
+                    
+                    
+                } else if (notion_id.isEmpty()){
+                    Toast.makeText(OnboardActivity.this, "Debes rellenar el notion_id", Toast.LENGTH_SHORT).show();
+                    mNextBtn.setVisibility(View.INVISIBLE);
+                } else if (notion_database_id.isEmpty()){
+                    Toast.makeText(OnboardActivity.this, "Debes rellenar el database_id", Toast.LENGTH_SHORT).show();
+                    mNextBtn.setVisibility(View.INVISIBLE);
                 } else {
-                    Log.e("SSSS", "False");
+                    Toast.makeText(OnboardActivity.this, "Debes rellenar el notion_id y el database_id", Toast.LENGTH_SHORT).show();
                     mNextBtn.setVisibility(View.INVISIBLE);
                 }
-
-
 
                 //Si tienes el texto en los shared object genial
                 // Sino comprobar si estan en los edit text
