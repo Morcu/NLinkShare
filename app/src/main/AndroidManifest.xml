@@ -24,6 +24,20 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity android:name=".ReceiveActivity"
+            android:exported="true"
+            android:clearTaskOnLaunch="true">
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/plain" />
+                <data android:mimeType="text/rtf" />
+                <data android:mimeType="text/html " />
+                <data android:mimeType="text/json" />
+            </intent-filter>
+        </activity>
+
     </application>
 
 </manifest>

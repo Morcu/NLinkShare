@@ -36,6 +36,8 @@ dependencies {
     // Added
     implementation 'com.squareup.picasso:picasso:2.3.3'
     implementation 'com.android.volley:volley:1.2.0'
+    implementation 'com.loopj.android:android-async-http:1.4.9'
+    implementation 'org.jsoup:jsoup:1.14.3'
 
 
     testImplementation 'junit:junit:4.13.2'
