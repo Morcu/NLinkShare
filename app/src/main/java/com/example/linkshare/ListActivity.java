@@ -38,6 +38,8 @@ public class ListActivity extends AppCompatActivity {
     public static String NOTION_ID = "NOTION_ID";
     public static String NOTION_DATABASE_ID = "NOTION_DATABASE_ID";
 
+    public Boolean sol_res;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -46,8 +48,86 @@ public class ListActivity extends AppCompatActivity {
 
         eRecycleview = findViewById(R.id.myReciclerView);
         eRecycleview.setLayoutManager(new LinearLayoutManager(this));
+        // Comprobar que tienen las claves
+        String notion_id = loadData(NOTION_ID);
+        String notion_database_id = loadData(NOTION_DATABASE_ID);
+        if (!notion_id.isEmpty() && !notion_database_id.isEmpty()){
+            // Comprobar que la database tiene los campos correctos
 
-        getDataForLayout(getApplicationContext());
+
+
+            RequestQueue queue = Volley.newRequestQueue(this);
+            String url ="https://api.notion.com/v1/databases/" + notion_database_id;
+            final Boolean[] is_correct = {false};
+            // Request a string response from the provided URL.
+            StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
+                    new Response.Listener<String>() {
+                        @Override
+                        public void onResponse(String response) {
+                            Log.e("Respuesta", response);
+                            // Display the first 500 characters of the response string.
+                            try {
+                                JSONObject obj = new JSONObject(response);
+                                JSONObject properties = obj.getJSONObject("properties");
+                                if (properties.getJSONObject("Image").getString("type").equals("files") &&
+                                        properties.getJSONObject("Description").getString("type").equals("rich_text") &&
+                                        properties.getJSONObject("Link").getString("type").equals("url") &&
+                                        properties.getJSONObject("Name").getString("type").equals("title")
+                                ){
+
+                                    Log.e("CCHECJ", "CHEQUEAO");
+                                    getDataForLayout(getApplicationContext());
+                                }else{
+
+                                    Log.e("CCHECJ", "NOOOOOOOOO");
+                                    // Avisar de que la database esta mal
+                                    // Preguntar si quiere que la app la edite para que funcione correctamente
+                                    // Avisar de que se van a borrar todos los datos de la database
+
+                                }
+
+
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                                sol_res = false;
+
+                            }
+
+
+                        }
+                    }, new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    Log.e("ERR", error.toString());
+                    Toast.makeText(ListActivity.this, "ERROR!", Toast.LENGTH_SHORT).show();
+                }
+            })
+            {
+                @Override
+                protected Map<String,String> getParams(){
+                    Map<String,String> params = new HashMap<String, String>();
+                    return params;
+                }
+                @Override
+                public Map<String, String> getHeaders() throws AuthFailureError {
+                    Map<String,String> params = new HashMap<String, String>();
+                    params.put("Authorization", "Bearer " + notion_id);
+                    params.put("Notion-Version", "2021-08-16");
+                    params.put("Content-Type", "application/json");
+                    return params;
+                }
+            };
+            ;
+
+            // Add the request to the RequestQueue.
+            queue.add(stringRequest);
+
+
+
+
+        } else {
+            Toast.makeText(this, "Las claves no estan bien seteadas", Toast.LENGTH_SHORT).show();
+        }
     }
 
     // Load data from shared preferences
@@ -55,6 +135,16 @@ public class ListActivity extends AppCompatActivity {
         SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFS, MODE_PRIVATE);
         return sharedPreferences.getString(key, "");
     }
+
+    private void check_notiondb_properties(String notion_id, String database_id){
+
+        // Hacer un get
+        // Instantiate the RequestQueue.
+
+
+        // Comprobar que tiene los campos necesarios
+    }
+
 
     private void getDataForLayout(Context context){
 
@@ -65,7 +155,7 @@ public class ListActivity extends AppCompatActivity {
 
         String notion_id = loadData(NOTION_ID);
         String notion_database_id = loadData(NOTION_DATABASE_ID);
-        String url = "https://api.notion.com/v1/databases/" + notion_database_id + "/query";
+        String url = "https://api.notion.com/v1/databases/"+notion_database_id + "/query";
 
         StringRequest sr = new StringRequest(Request.Method.POST, url,
                 new Response.Listener<String>() {
@@ -79,19 +169,23 @@ public class ListActivity extends AppCompatActivity {
                             for (int i = 0; i < resutls.length(); i++) {
                                 try{
                                     JSONObject listDetail = resutls.getJSONObject(i);
-                                    Log.e("JSON", " JSOOOOON" );
-                                    String texto = listDetail.getJSONObject("properties").getJSONObject("Description").getJSONArray("rich_text").getJSONObject(0).getJSONObject("text").getString("content");
-                                    Log.e("JSON", " " + texto);
+                                    Log.e("JSON", listDetail.toString() );
 
+                                    String title = listDetail.getJSONObject("properties").getJSONObject("Name").getJSONArray("title").getJSONObject(0).getJSONObject("text").getString("content");
+                                    String desc = listDetail.getJSONObject("properties").getJSONObject("Description").getJSONArray("rich_text").getJSONObject(0).getJSONObject("text").getString("content");
+                                    String img_url = listDetail.getJSONObject("properties").getJSONObject("Image").getJSONArray("files").getJSONObject(0).getJSONObject("external").getString("url");
+                                    String url = listDetail.getJSONObject("properties").getJSONObject("Link").getString("url");
+                                    enlacesList.add(new Enlaces(title, desc, img_url, url));
 
-                                    enlacesList.add(new Enlaces(texto, "descripcion", "img_url", "url2"));
                                 } catch (Exception e){
+                                    Log.e("errrrooor", e.toString());
                                     e.printStackTrace();
                                 }
 
                             }
                             eAdapter = new EnlaceAdapter(context, enlacesList, R.layout.list_view);
                             eRecycleview.setAdapter(eAdapter);
+
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
@@ -103,12 +197,11 @@ public class ListActivity extends AppCompatActivity {
                         Log.e("HttpClient", "error: " + error.toString());
                     }
                 })
+
         {
             @Override
             protected Map<String,String> getParams(){
                 Map<String,String> params = new HashMap<String, String>();
-                // params.put("user","YOUR USERNAME");
-                //  params.put("pass","YOUR PASSWORD");
                 return params;
             }
             @Override
@@ -116,6 +209,7 @@ public class ListActivity extends AppCompatActivity {
                 Map<String,String> params = new HashMap<String, String>();
                 params.put("Authorization", "Bearer " + notion_id);
                 params.put("Notion-Version", "2021-08-16");
+                params.put("Content-Type", "application/json");
                 return params;
             }
         };
@@ -123,21 +217,6 @@ public class ListActivity extends AppCompatActivity {
         // Add the request to the RequestQueue.
         queue.add(sr);
 
- /*
-        enlacesList.clear();
-
-        for (int i = 0; i < 4; i++) {
-
-            String texto = "Texto " + i;
-            String descripcion = "Descripcion " + i;
-            String img_url = "https://media.istockphoto.com/photos/madrid-spain-on-gran-via-picture-id1297090032?b=1&k=20&m=1297090032&s=170667a&w=0&h=OLFFlSPXDqXq7SZaLMTUpGJh-bz7FKRCjnOTGBT7GRc=";
-            String url2 = "http://example.com";
-            enlacesList.add(new Enlaces(texto, descripcion, img_url, url2));
-        }
-
-        eAdapter = new EnlaceAdapter(context, enlacesList, R.layout.list_view);
-        eRecycleview.setAdapter(eAdapter);
-        */
     }
 
 }

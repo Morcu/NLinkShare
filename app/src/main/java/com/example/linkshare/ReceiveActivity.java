@@ -43,11 +43,10 @@ public class ReceiveActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.receive_layout);
-        Log.e("AAAAAAA", "QUE PASA AQUIII");
         Intent intent = getIntent();
         String action = intent.getAction();
         String type = intent.getType();
-        Log.e("III", intent.toString() + "   " + action.toString() + "   "+  type.toString());
+
         txtRecTitulo = findViewById(R.id.txtRecTitulo);
         txtRecDesc = findViewById(R.id.txtRecDesc);
         btnRecCrear = findViewById(R.id.btnRecCrear);
@@ -81,6 +80,7 @@ public class ReceiveActivity extends AppCompatActivity {
 
     }
 
+    // Finish the activity to reload data each time
     @Override
     protected void onStop() {
         super.onStop();
@@ -93,7 +93,7 @@ public class ReceiveActivity extends AppCompatActivity {
         finish();
     }
 
-
+    // Setting the front data
     private void setText(final String title, final String desc, final String url){
         runOnUiThread(new Runnable() {
             @Override
@@ -110,8 +110,6 @@ public class ReceiveActivity extends AppCompatActivity {
     }
 
     private class Content extends AsyncTask<String,Void,Void> {
-
-
 
         @Override
         protected void onPreExecute() {
@@ -132,23 +130,18 @@ public class ReceiveActivity extends AppCompatActivity {
         protected Void doInBackground(String... url) {
 
             try {
-                Log.e("URL", url[0]);
+                // Get the HTML for the URL
                 Document doc = Jsoup.connect(url[0]).get();
-
-                Log.e("TITLE", doc.title());
-
+                // Set the title, description and Image (favicon)
                 setText(
                         doc.title().toString(), doc.select("meta[name=description]").get(0)
                         .attr("content").toString(),
                         doc.head().select("link[href~=.*\\.(ico|png)]").last().attr("href")
                 );
 
-
-
             } catch (IOException e) {
                 e.printStackTrace();
             }
-
 
             return null;
         }
