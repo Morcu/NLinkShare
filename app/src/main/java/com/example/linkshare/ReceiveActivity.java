@@ -2,6 +2,7 @@ package com.example.linkshare;
 
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
@@ -11,12 +12,26 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
+import com.example.linkshare.Models.Enlaces;
+import com.example.linkshare.adapters.EnlaceAdapter;
 import com.squareup.picasso.Picasso;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -38,6 +53,10 @@ public class ReceiveActivity extends AppCompatActivity {
     private ImageView imgRecImg;
     private String imageURL;
     private String url;
+
+    public static final String SHARED_PREFS = "sharedPrefs";
+    public static String NOTION_ID = "NOTION_ID";
+    public static String NOTION_DATABASE_ID = "NOTION_DATABASE_ID";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,9 +95,101 @@ public class ReceiveActivity extends AppCompatActivity {
 
                 //TODO: Hacer push!!!!
 
+    //--------
 
-                Intent myIntent = new Intent(ReceiveActivity.this, ListActivity.class);
-                startActivity(myIntent);
+                RequestQueue queue = Volley.newRequestQueue(ReceiveActivity.this);
+
+                String notion_id = loadData(NOTION_ID);
+                String notion_database_id = loadData(NOTION_DATABASE_ID);
+                String url_pages = "https://api.notion.com/v1/pages";
+
+                String json_string = "{" +
+                        " 'parent': { 'database_id': '"+ notion_database_id+"' }," +
+                        " 'properties': {" +
+                        "  'Name': {" +
+                        "   'title': [" +
+                        "    {" +
+                        "     'text': {" +
+                        "      'content': '"+ txtRecTitulo.getText().toString()+"'" +
+                        "     }" +
+                        "    }" +
+                        "   ]" +
+                        "  }," +
+                        "  'Description': {" +
+                        "   'rich_text': [" +
+                        "    {" +
+                        "     'text': {" +
+                        "      'content': '"+ txtRecDesc.getText().toString() +"'" +
+                        "     }" +
+                        "    }" +
+                        "   ]" +
+                        "  }," +
+                        "        'Link': {" +
+                        "            'url': '"+ url +"'" +
+                        "        }," +
+                        "        'Image':{" +
+                        "            'files': [" +
+                        "            {" +
+                        "                'name': 'Filename'," +
+                        "                'type': 'external'," +
+                        "                'external': {" +
+                        "                    'url': '"+ imageURL +"'" +
+                        "                }" +
+                        "                }" +
+                        "            ]" +
+                        "        }" +
+                        "    }" +
+                        "}";
+
+                JSONObject js = null;
+                try {
+                    js = new JSONObject(json_string);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+                JsonObjectRequest jsonObjReq = new JsonObjectRequest(
+                        Request.Method.POST,url_pages, js,
+                        new Response.Listener<JSONObject>() {
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                Intent myIntent = new Intent(ReceiveActivity.this, ListActivity.class);
+                                startActivity(myIntent);
+                            }
+                        }, new Response.ErrorListener() {
+
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Log.e("Error", "Error: " + error.getMessage());
+
+                    }
+                })
+
+                {
+                    @Override
+                    protected Map<String,String> getParams(){
+                        Map<String,String> params = new HashMap<String, String>();
+                        return params;
+                    }
+                    @Override
+                    public Map<String, String> getHeaders() throws AuthFailureError {
+                        Map<String,String> params = new HashMap<String, String>();
+                        params.put("Authorization", "Bearer " + notion_id);
+                        params.put("Notion-Version", "2021-08-16");
+                        params.put("Content-Type", "application/json");
+                        return params;
+                    }
+                };
+
+                // Add the request to the RequestQueue.
+                queue.add(jsonObjReq);
+
+
+
+
+
+            //------
+
             }
         });
 
@@ -97,18 +208,24 @@ public class ReceiveActivity extends AppCompatActivity {
         finish();
     }
 
+    public String loadData(String key) {
+        SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFS, MODE_PRIVATE);
+        return sharedPreferences.getString(key, "");
+    }
+
     // Setting the front data
-    private void setText(final String title, final String desc, final String url){
+    private void setText(final String title, final String desc, final String image_url, final String url_save){
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 txtRecTitulo.setText(title);
                 txtRecDesc.setText(desc);
                 Picasso.with(ReceiveActivity.this)
-                        .load(url)
+                        .load(image_url)
                         .error(R.mipmap.ic_launcher)
                         .into(imgRecImg);
-                imageURL = url;
+                imageURL = image_url;
+                url = url_save;
             }
         });
     }
@@ -140,7 +257,8 @@ public class ReceiveActivity extends AppCompatActivity {
                 setText(
                         doc.title().toString(), doc.select("meta[name=description]").get(0)
                         .attr("content").toString(),
-                        doc.head().select("link[href~=.*\\.(ico|png)]").last().attr("href")
+                        doc.head().select("link[href~=.*\\.(ico|png)]").last().attr("href"),
+                        url[0]
                 );
 
             } catch (IOException e) {
