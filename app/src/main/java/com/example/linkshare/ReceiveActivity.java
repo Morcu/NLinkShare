@@ -73,6 +73,10 @@ public class ReceiveActivity extends AppCompatActivity {
                 linkMap.put("img_url", imageURL);
                 linkMap.put("url", url);
                 //tDatabase.child("enlace").push().setValue(linkMap);
+
+                //TODO: Hacer push!!!!
+
+
                 Intent myIntent = new Intent(ReceiveActivity.this, ListActivity.class);
                 startActivity(myIntent);
             }

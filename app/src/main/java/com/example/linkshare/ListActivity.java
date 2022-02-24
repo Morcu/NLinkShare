@@ -80,6 +80,8 @@ public class ListActivity extends AppCompatActivity {
                                 }else{
 
                                     Log.e("CCHECJ", "NOOOOOOOOO");
+
+                                    //TODO:
                                     // Avisar de que la database esta mal
                                     // Preguntar si quiere que la app la edite para que funcione correctamente
                                     // Avisar de que se van a borrar todos los datos de la database
