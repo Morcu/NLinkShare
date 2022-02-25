@@ -36,6 +36,9 @@ public class MainActivity extends AppCompatActivity {
         if (notion_id.isEmpty() || notion_database_id.isEmpty()){
             Intent myIntent = new Intent(this, OnboardActivity.class);
             startActivity(myIntent);
+        } else {
+            Intent myIntent = new Intent(this, ListActivity.class);
+            startActivity(myIntent);
         }
 
         btnLista.setOnClickListener(new View.OnClickListener() {

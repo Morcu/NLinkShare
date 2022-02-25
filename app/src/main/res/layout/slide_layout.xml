@@ -43,7 +43,9 @@
         android:text="Select the Cuisine of the recipe that you desire, from numerous options starting from Indian and upto Greek."
         android:textAlignment="center"
         android:textAppearance="@style/TextAppearance.AppCompat.Body1"
-        android:textColor="@color/colorTransparentWhite" />
+        android:textColor="@color/colorTransparentWhite"
+        android:linksClickable="true"
+        />
 
 
 </RelativeLayout>

@@ -39,10 +39,15 @@ import org.jsoup.nodes.Element;
 import java.io.IOException;
 import java.io.InputStream;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 public class ReceiveActivity extends AppCompatActivity {
@@ -78,7 +83,18 @@ public class ReceiveActivity extends AppCompatActivity {
                 Content content = new Content();
                 String url = intent.getStringExtra(Intent.EXTRA_TEXT);
                 Log.e("URL PRE", url);
-                content.execute(url);
+                List<String> extractedUrls = extractUrls(url);
+                Log.e("Extracted URL", extractedUrls.toString());
+                Log.e("Extracted URL", extractedUrls.get(0));
+
+                try {
+                    content.execute(extractedUrls.get(0));
+                }catch (Exception e){
+                    Toast.makeText(this, "Invalid url", Toast.LENGTH_SHORT).show();
+                    Intent myIntent = new Intent(this, ListActivity.class);
+                    startActivity(myIntent);
+                }
+
             }
         }
 
@@ -185,11 +201,6 @@ public class ReceiveActivity extends AppCompatActivity {
                 queue.add(jsonObjReq);
 
 
-
-
-
-            //------
-
             }
         });
 
@@ -206,6 +217,26 @@ public class ReceiveActivity extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
         finish();
+    }
+
+
+    /**
+     * Returns a list with all links contained in the input
+     */
+    public static List<String> extractUrls(String text)
+    {
+        List<String> containedUrls = new ArrayList<String>();
+        String urlRegex = "((https?|ftp|gopher|telnet|file):((//)|(\\\\))+[\\w\\d:#@%/;$()~_?\\+-=\\\\\\.&]*)";
+        Pattern pattern = Pattern.compile(urlRegex, Pattern.CASE_INSENSITIVE);
+        Matcher urlMatcher = pattern.matcher(text);
+
+        while (urlMatcher.find())
+        {
+            containedUrls.add(text.substring(urlMatcher.start(0),
+                    urlMatcher.end(0)));
+        }
+
+        return containedUrls;
     }
 
     public String loadData(String key) {
@@ -249,16 +280,40 @@ public class ReceiveActivity extends AppCompatActivity {
 
         @Override
         protected Void doInBackground(String... url) {
+            Log.e("QQQQQQ", Arrays.toString(url));
+            Log.e("QQQQQQ", url[0]);
 
             try {
                 // Get the HTML for the URL
                 Document doc = Jsoup.connect(url[0]).get();
                 // Set the title, description and Image (favicon)
+                String title;
+                String desc;
+                String img_url_s;
+
+                try {
+                    title = doc.title();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    title = "Default Title";
+                }
+                try {
+                    desc = doc.select("meta[name=description]").get(0)
+                            .attr("content");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    desc = "Default description";
+                }
+                try {
+                    img_url_s = doc.head().select("link[href~=.*\\.(ico|png)]").last().attr("href");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    img_url_s = ""+R.drawable.ic_launcher_background;
+                }
+
+
                 setText(
-                        doc.title().toString(), doc.select("meta[name=description]").get(0)
-                        .attr("content").toString(),
-                        doc.head().select("link[href~=.*\\.(ico|png)]").last().attr("href"),
-                        url[0]
+                        title, desc, img_url_s, url[0]
                 );
 
             } catch (IOException e) {

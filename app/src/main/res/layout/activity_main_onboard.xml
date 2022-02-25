@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout
+
+    android:theme="@style/Theme.AppCompat.NoActionBar"
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -31,8 +34,8 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/slideviewpager"
         android:layout_toRightOf="@+id/linearLayout"
-        android:background="@android:drawable/screen_background_light_transparent"
-        android:text="Button" />
+        android:background="#00000000"
+        android:text="Start" />
 
     <Button
         android:id="@+id/previous"
@@ -40,8 +43,8 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/slideviewpager"
         android:layout_toLeftOf="@+id/linearLayout"
-        android:background="@android:drawable/screen_background_dark_transparent"
-        android:text="Button" />
+        android:background="#00000000"
+        android:text="" />
 
     <EditText
         android:id="@+id/editIdNotion"
@@ -54,7 +57,7 @@
         android:lineSpacingExtra="10sp"
         android:paddingVertical="@android:dimen/app_icon_size"
         android:singleLine="false"
-        android:hint="Introduce el id de notion"
+        android:hint="Internal Integration Token"
         android:textAlignment="center"
         android:textAppearance="@style/TextAppearance.AppCompat.Body1"
         android:textColor="@color/colorTransparentWhite"
@@ -72,7 +75,7 @@
         android:lineSpacingExtra="10sp"
         android:paddingVertical="@android:dimen/app_icon_size"
         android:singleLine="false"
-        android:hint="Introduce el id de la tabla"
+        android:hint="Database ID"
         android:textAlignment="center"
         android:textAppearance="@style/TextAppearance.AppCompat.Body1"
         android:textColor="@color/colorTransparentWhite"

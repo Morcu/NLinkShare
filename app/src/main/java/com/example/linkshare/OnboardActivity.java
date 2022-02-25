@@ -57,6 +57,7 @@ public class OnboardActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_onboard);
+        getSupportActionBar().hide();
 
         // Front variables
         mSlideViewPager = (ViewPager) findViewById(R.id.slideviewpager);
@@ -70,7 +71,7 @@ public class OnboardActivity extends AppCompatActivity {
         mBackBtn = (Button) findViewById(R.id.previous);
         addDotsIndicator(0);
         mSlideViewPager.addOnPageChangeListener(viewListener);
-        
+
 
         // Next button listener
         mNextBtn.setOnClickListener(new View.OnClickListener() {
@@ -292,13 +293,13 @@ public class OnboardActivity extends AppCompatActivity {
                     
                     
                 } else if (notion_id.isEmpty()){
-                    Toast.makeText(OnboardActivity.this, "Debes rellenar el notion_id", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(OnboardActivity.this, "Wrong Internal Integration Token", Toast.LENGTH_SHORT).show();
                     mNextBtn.setVisibility(View.INVISIBLE);
                 } else if (notion_database_id.isEmpty()){
-                    Toast.makeText(OnboardActivity.this, "Debes rellenar el database_id", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(OnboardActivity.this, "Wrong Database ID", Toast.LENGTH_SHORT).show();
                     mNextBtn.setVisibility(View.INVISIBLE);
                 } else {
-                    Toast.makeText(OnboardActivity.this, "Debes rellenar el notion_id y el database_id", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(OnboardActivity.this, "Wrong Internal Integration Token and Database ID", Toast.LENGTH_SHORT).show();
                     mNextBtn.setVisibility(View.INVISIBLE);
                 }
 
